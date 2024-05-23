@@ -253,16 +253,18 @@ public class Main {
     }
 
     private static String[][] getTrainData(String from, String to) {
-        List<String[]> trainData = new ArrayList<>();
-        for (Train train : trains.values()) {
-            if (train.schedule.containsKey(stations.get(from)) && train.schedule.containsKey(stations.get(to))) {
-                String[] scheduleFrom = train.schedule.get(stations.get(from));
-                String[] scheduleTo = train.schedule.get(stations.get(to));
-                trainData.add(new String[]{train.id, train.name, scheduleFrom[0], scheduleTo[1]});
-            }
+    List<String[]> trainData = new ArrayList<>();
+    for (Train train : trains.values()) {
+        // Check if both 'from' and 'to' stations are present in the keys of the schedule map
+        if (train.schedule.containsKey(stations.get(from)) && train.schedule.containsKey(stations.get(to))) {
+            String[] scheduleFrom = train.schedule.get(stations.get(from));
+            String[] scheduleTo = train.schedule.get(stations.get(to));
+            trainData.add(new String[]{train.id, train.name, scheduleFrom[0], scheduleTo[1]});
+            System.out.println(train.id + " " + train.name + " " + scheduleFrom[0] + " " + scheduleTo[1]);
         }
-        return trainData.toArray(new String[0][0]);
     }
+    return trainData.toArray(new String[0][0]);
+}
 
     private static void createBookingPage() {
         JFrame bookingFrame = new JFrame("Booking Details");
