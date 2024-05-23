@@ -1,12 +1,102 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.*;
+import java.util.List;
+
+class Station {
+    String name;
+    List<Track> tracks = new ArrayList<>();
+
+    Station(String name) {
+        this.name = name;
+    }
+}
+
+class Track {
+    Station from;
+    Station to;
+    int distance; // not used currently but can be expanded
+
+    Track(Station from, Station to, int distance) {
+        this.from = from;
+        this.to = to;
+        this.distance = distance;
+    }
+}
+
+class Train {
+    String id;
+    String name;
+    Map<Station, String[]> schedule = new LinkedHashMap<>();
+    int delay; // delay in minutes
+
+    Train(String id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+
+class Booking {
+    Train train;
+    String from;
+    String to;
+    String date;
+    String passengerName;
+    String seat;
+    String paymentInfo;
+
+    Booking(Train train, String from, String to, String date, String passengerName, String seat, String paymentInfo) {
+        this.train = train;
+        this.from = from;
+        this.to = to;
+        this.date = date;
+        this.passengerName = passengerName;
+        this.seat = seat;
+        this.paymentInfo = paymentInfo;
+    }
+}
 
 public class Main {
-    private static String selectedTrain;
-    private static String paymentInfo;
+    private static Map<String, Station> stations = new HashMap<>();
+    private static Map<String, Train> trains = new HashMap<>();
+    private static List<Booking> bookings = new ArrayList<>();
+    private static Train selectedTrain;
+    private static String fromStation;
+    private static String toStation;
+    private static String travelDate;
 
     public static void main(String[] args) {
+        setupData();
         SwingUtilities.invokeLater(Main::createWelcomePage);
+    }
+
+    private static void setupData() {
+        Station dhaka = new Station("Dhaka");
+        Station chittagong = new Station("Chittagong");
+        Station sylhet = new Station("Sylhet");
+        Station rajshahi = new Station("Rajshahi");
+
+        stations.put("Dhaka", dhaka);
+        stations.put("Chittagong", chittagong);
+        stations.put("Sylhet", sylhet);
+        stations.put("Rajshahi", rajshahi);
+
+        dhaka.tracks.add(new Track(dhaka, chittagong, 245));
+        chittagong.tracks.add(new Track(chittagong, dhaka, 245));
+        dhaka.tracks.add(new Track(dhaka, sylhet, 286));
+        sylhet.tracks.add(new Track(sylhet, dhaka, 286));
+        dhaka.tracks.add(new Track(dhaka, rajshahi, 343));
+        rajshahi.tracks.add(new Track(rajshahi, dhaka, 343));
+
+        Train subornoExpress = new Train("111", "Suborno Express");
+        subornoExpress.schedule.put(dhaka, new String[]{"06:00", "06:15"});
+        subornoExpress.schedule.put(chittagong, new String[]{"10:30", "10:45"});
+        trains.put("111", subornoExpress);
+
+        Train mohanagarExpress = new Train("222", "Mohanagar Express");
+        mohanagarExpress.schedule.put(dhaka, new String[]{"07:00", "07:15"});
+        mohanagarExpress.schedule.put(sylhet, new String[]{"11:30", "11:45"});
+        trains.put("222", mohanagarExpress);
     }
 
     private static void createWelcomePage() {
@@ -62,7 +152,7 @@ public class Main {
 
             if (isValidLogin(username, password)) {
                 loginFrame.dispose();
-                createTrainListPage();
+                createSearchPage();
             } else {
                 messageLabel.setText("Invalid login");
             }
@@ -82,6 +172,52 @@ public class Main {
         return "tasnia".equals(username) && "tasnia1234".equals(password);
     }
 
+    private static void createSearchPage() {
+        JFrame searchFrame = new JFrame("Search Trains");
+        searchFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        searchFrame.setSize(470, 685);
+        searchFrame.setLayout(null);
+
+        JLabel headerLabel = new JLabel("Search for Trains", SwingConstants.CENTER);
+        headerLabel.setBounds(35, 50, 400, 60);
+        headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.PLAIN, 21));
+
+        JLabel fromLabel = new JLabel("From:");
+        fromLabel.setBounds(60, 150, 100, 30);
+        JTextField fromField = new JTextField();
+        fromField.setBounds(140, 150, 200, 30);
+
+        JLabel toLabel = new JLabel("To:");
+        toLabel.setBounds(60, 200, 100, 30);
+        JTextField toField = new JTextField();
+        toField.setBounds(140, 200, 200, 30);
+
+        JLabel dateLabel = new JLabel("Date:");
+        dateLabel.setBounds(60, 250, 100, 30);
+        JTextField dateField = new JTextField();
+        dateField.setBounds(140, 250, 200, 30);
+
+        JButton searchButton = new JButton("Search");
+        searchButton.setBounds(175, 300, 100, 30);
+        searchButton.addActionListener(e -> {
+            fromStation = fromField.getText();
+            toStation = toField.getText();
+            travelDate = dateField.getText();
+            searchFrame.dispose();
+            createTrainListPage();
+        });
+
+        searchFrame.add(headerLabel);
+        searchFrame.add(fromLabel);
+        searchFrame.add(fromField);
+        searchFrame.add(toLabel);
+        searchFrame.add(toField);
+        searchFrame.add(dateLabel);
+        searchFrame.add(dateField);
+        searchFrame.add(searchButton);
+        searchFrame.setVisible(true);
+    }
+
     private static void createTrainListPage() {
         JFrame trainListFrame = new JFrame("Train List");
         trainListFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -91,118 +227,113 @@ public class Main {
         JLabel trainListLabel = new JLabel("Available Trains", SwingConstants.CENTER);
         trainListLabel.setBounds(35, 20, 400, 60);
 
-        String[][] data = {
-            {"111", "Suborno Express", "1:20"},
-            {"222", "Mohanagar Provati/Godhuli Express", "1:50"},
-            {"333", "Ekota Express", "2:30"},
-            {"444", "Tista Express", "3:50"},
-            {"555", "Parabat Express", "4:30"},
-            {"666", "Upakul Express", "5:10"},
-            {"777", "Karatoya Express", "5:30"},
-            {"888", "Jayantika Express", "6:00"},
-            {"999", "Paharika Express", "6:30"},
-            {"112", "Mohanagar Express", "6:50"},
-            {"113", "Udayan Express", "7:30"},
-            {"114", "Meghna Express", "7:50"},
-            {"115", "Barendra Express", "8:20"},
-            {"116", "Titumir Express", "9:30"},
-            {"117", "Agnibina Express", "10:00"}
-        };
-        String[] columnNames = {"ID", "Train Name", "Time"};
-        JTable trainListTable = new JTable(data, columnNames);
-        JScrollPane scrollPane = new JScrollPane(trainListTable);
-        scrollPane.setBounds(30, 100, 400, 300);
+        String[][] data = getTrainData(fromStation, toStation);
+        String[] column = {"ID", "Train Name", "Arrival", "Departure"};
+        JTable trainListTable = new JTable(data, column);
+        trainListTable.setBounds(30, 100, 400, 250);
+        JScrollPane sp = new JScrollPane(trainListTable);
+        sp.setBounds(30, 100, 400, 250);
 
-        JButton submitButton = new JButton("Submit");
-        submitButton.setBounds(175, 500, 80, 40);
-        submitButton.addActionListener(e -> {
+        JButton bookButton = new JButton("Book");
+        bookButton.setBounds(175, 380, 100, 30);
+        bookButton.addActionListener(e -> {
             int selectedRow = trainListTable.getSelectedRow();
-            if (selectedRow != -1) {
-                selectedTrain = String.format("Train ID: %s, Train Name: %s, Time: %s",
-                        data[selectedRow][0], data[selectedRow][1], data[selectedRow][2]);
+            if (selectedRow >= 0) {
+                String selectedTrainId = (String) trainListTable.getValueAt(selectedRow, 0);
+                selectedTrain = trains.get(selectedTrainId);
                 trainListFrame.dispose();
-                createPaymentPage();
-            } else {
-                JOptionPane.showMessageDialog(trainListFrame, "Please select a train.");
+                createBookingPage();
             }
         });
 
         trainListFrame.add(trainListLabel);
-        trainListFrame.add(scrollPane);
-        trainListFrame.add(submitButton);
+        trainListFrame.add(sp);
+        trainListFrame.add(bookButton);
         trainListFrame.setVisible(true);
     }
 
-    private static void createPaymentPage() {
-        JFrame paymentFrame = new JFrame("Payment Page");
-        paymentFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        paymentFrame.setSize(470, 685);
-        paymentFrame.setLayout(null);
-
-        JLabel numberLabel = new JLabel("Number:");
-        numberLabel.setBounds(60, 115, 80, 30);
-        JTextField numberField = new JTextField();
-        numberField.setBounds(140, 115, 200, 30);
-
-        JLabel amountLabel = new JLabel("Amount:");
-        amountLabel.setBounds(60, 170, 80, 30);
-        JTextField amountField = new JTextField();
-        amountField.setBounds(140, 170, 200, 30);
-
-        JLabel refLabel = new JLabel("Reference:");
-        refLabel.setBounds(60, 225, 80, 30);
-        JTextField refField = new JTextField();
-        refField.setBounds(140, 225, 200, 30);
-
-        JLabel pinLabel = new JLabel("Pin:");
-        pinLabel.setBounds(60, 280, 80, 30);
-        JPasswordField pinField = new JPasswordField();
-        pinField.setBounds(140, 280, 200, 30);
-
-        JLabel paymentTypeLabel = new JLabel("Payment Type:");
-        paymentTypeLabel.setBounds(60, 335, 100, 30);
-        String[] paymentTypes = {"bKash", "nagad", "Visa Card", "MasterCard"};
-        JComboBox<String> paymentTypeComboBox = new JComboBox<>(paymentTypes);
-        paymentTypeComboBox.setBounds(170, 335, 170, 30);
-
-        JButton submitButton = new JButton("Submit");
-        submitButton.setBounds(175, 480, 80, 30);
-        submitButton.addActionListener(e -> {
-            paymentInfo = String.format("Number: %s, Amount: %s, Payment Type: %s",
-                    numberField.getText(), amountField.getText(), paymentTypeComboBox.getSelectedItem());
-            paymentFrame.dispose();
-            createThankYouPage();
-        });
-
-        paymentFrame.add(numberLabel);
-        paymentFrame.add(numberField);
-        paymentFrame.add(amountLabel);
-        paymentFrame.add(amountField);
-        paymentFrame.add(refLabel);
-        paymentFrame.add(refField);
-        paymentFrame.add(pinLabel);
-        paymentFrame.add(pinField);
-        paymentFrame.add(paymentTypeLabel);
-        paymentFrame.add(paymentTypeComboBox);
-        paymentFrame.add(submitButton);
-        paymentFrame.setVisible(true);
+    private static String[][] getTrainData(String from, String to) {
+        List<String[]> trainData = new ArrayList<>();
+        for (Train train : trains.values()) {
+            if (train.schedule.containsKey(stations.get(from)) && train.schedule.containsKey(stations.get(to))) {
+                String[] scheduleFrom = train.schedule.get(stations.get(from));
+                String[] scheduleTo = train.schedule.get(stations.get(to));
+                trainData.add(new String[]{train.id, train.name, scheduleFrom[0], scheduleTo[1]});
+            }
+        }
+        return trainData.toArray(new String[0][0]);
     }
 
-    private static void createThankYouPage() {
-        JFrame thankYouFrame = new JFrame("Thank You Page");
+    private static void createBookingPage() {
+        JFrame bookingFrame = new JFrame("Booking Details");
+        bookingFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        bookingFrame.setSize(470, 685);
+        bookingFrame.setLayout(null);
+
+        JLabel headerLabel = new JLabel("Passenger Details", SwingConstants.CENTER);
+        headerLabel.setBounds(35, 20, 400, 60);
+        headerLabel.setFont(new Font(headerLabel.getFont().getName(), Font.PLAIN, 21));
+
+        JLabel nameLabel = new JLabel("Name:");
+        nameLabel.setBounds(60, 100, 100, 30);
+        JTextField nameField = new JTextField();
+        nameField.setBounds(140, 100, 200, 30);
+
+        JLabel seatLabel = new JLabel("Seat:");
+        seatLabel.setBounds(60, 150, 100, 30);
+        JTextField seatField = new JTextField();
+        seatField.setBounds(140, 150, 200, 30);
+
+        JLabel paymentLabel = new JLabel("Payment Info:");
+        paymentLabel.setBounds(60, 200, 100, 30);
+        JTextField paymentField = new JTextField();
+        paymentField.setBounds(140, 200, 200, 30);
+
+        JButton confirmButton = new JButton("Confirm");
+        confirmButton.setBounds(175, 300, 100, 30);
+        confirmButton.addActionListener(e -> {
+            String passengerName = nameField.getText();
+            String seat = seatField.getText();
+            String paymentInfo = paymentField.getText();
+            Booking booking = new Booking(selectedTrain, fromStation, toStation, travelDate, passengerName, seat, paymentInfo);
+            bookings.add(booking);
+            bookingFrame.dispose();
+            createThankYouPage(booking);
+        });
+
+        bookingFrame.add(headerLabel);
+        bookingFrame.add(nameLabel);
+        bookingFrame.add(nameField);
+        bookingFrame.add(seatLabel);
+        bookingFrame.add(seatField);
+        bookingFrame.add(paymentLabel);
+        bookingFrame.add(paymentField);
+        bookingFrame.add(confirmButton);
+        bookingFrame.setVisible(true);
+    }
+
+    private static void createThankYouPage(Booking booking) {
+        JFrame thankYouFrame = new JFrame("Thank You");
         thankYouFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         thankYouFrame.setSize(470, 685);
         thankYouFrame.setLayout(null);
 
-        JLabel thankYouLabel = new JLabel("Thank You", SwingConstants.CENTER);
-        thankYouLabel.setBounds(35, 200, 400, 60);
-        thankYouLabel.setFont(new Font(thankYouLabel.getFont().getName(), Font.BOLD, 21));
+        JLabel messageLabel = new JLabel("Thank you for booking!", SwingConstants.CENTER);
+        messageLabel.setBounds(35, 100, 400, 60);
+        messageLabel.setFont(new Font(messageLabel.getFont().getName(), Font.BOLD, 21));
 
-        JLabel bookedInfoLabel = new JLabel("<html>Booked Ticket Info:<br>" + selectedTrain + "<br>" + paymentInfo + "</html>", SwingConstants.CENTER);
-        bookedInfoLabel.setBounds(35, 280, 400, 100);
+        JLabel bookingDetailsLabel = new JLabel("<html>Booking Details:<br>"
+                + "Train: " + booking.train.name + "<br>"
+                + "From: " + booking.from + "<br>"
+                + "To: " + booking.to + "<br>"
+                + "Date: " + booking.date + "<br>"
+                + "Passenger: " + booking.passengerName + "<br>"
+                + "Seat: " + booking.seat + "<br>"
+                + "Payment: " + booking.paymentInfo + "</html>", SwingConstants.CENTER);
+        bookingDetailsLabel.setBounds(35, 200, 400, 200);
 
-        thankYouFrame.add(thankYouLabel);
-        thankYouFrame.add(bookedInfoLabel);
+        thankYouFrame.add(messageLabel);
+        thankYouFrame.add(bookingDetailsLabel);
         thankYouFrame.setVisible(true);
     }
 }
