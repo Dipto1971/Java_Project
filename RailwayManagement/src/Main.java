@@ -75,6 +75,12 @@ public class Main {
         Station chittagong = new Station("Chittagong");
         Station sylhet = new Station("Sylhet");
         Station rajshahi = new Station("Rajshahi");
+        Station khulna = new Station("Khulna");
+        Station barisal = new Station("Barisal");
+        Station rangpur = new Station("Rangpur");
+        Station coxsbazar = new Station("Cox's Bazar");
+        Station bogura = new Station("Bogura");
+        Station comilla = new Station("Comilla");
 
         // Setting up the tracks between stations
         // Hashmap: key is the station name, value is the station object 
@@ -82,6 +88,12 @@ public class Main {
         stations.put("Chittagong", chittagong);
         stations.put("Sylhet", sylhet);
         stations.put("Rajshahi", rajshahi);
+        stations.put("Khulna", khulna);
+        stations.put("Barisal", barisal);
+        stations.put("Rangpur", rangpur);
+        stations.put("Cox's Bazar", coxsbazar);
+        stations.put("Bogura", bogura);
+        stations.put("Comilla", comilla);
 
         // OOP concept: Here we are creating a track object and adding it to the tracks list of the 'from' station
         // This way, we are creating a two-way track between two stations
@@ -92,6 +104,19 @@ public class Main {
         sylhet.tracks.add(new Track(sylhet, dhaka, 286));
         dhaka.tracks.add(new Track(dhaka, rajshahi, 343));
         rajshahi.tracks.add(new Track(rajshahi, dhaka, 343));
+        dhaka.tracks.add(new Track(dhaka, khulna, 335));
+        khulna.tracks.add(new Track(khulna, dhaka, 335));
+        dhaka.tracks.add(new Track(dhaka, barisal, 178));
+        barisal.tracks.add(new Track(barisal, dhaka, 178));
+        dhaka.tracks.add(new Track(dhaka, rangpur, 296));
+        rangpur.tracks.add(new Track(rangpur, dhaka, 296));
+        dhaka.tracks.add(new Track(dhaka, coxsbazar, 414));
+        coxsbazar.tracks.add(new Track(coxsbazar, dhaka, 414));
+        dhaka.tracks.add(new Track(dhaka, bogura, 247));
+        bogura.tracks.add(new Track(bogura, dhaka, 247));
+        dhaka.tracks.add(new Track(dhaka, comilla, 97));
+        comilla.tracks.add(new Track(comilla, dhaka, 97));
+
 
         // OOP concept: Here we are creating train objects and adding the schedule to the train object
         Train subornoExpress = new Train("111", "Suborno Express");
@@ -103,6 +128,31 @@ public class Main {
         mohanagarExpress.schedule.put(dhaka, new String[]{"07:00", "07:15"});
         mohanagarExpress.schedule.put(sylhet, new String[]{"11:30", "11:45"});
         trains.put("222", mohanagarExpress);
+
+        Train silkCityExpress = new Train("333", "Silk City Express");
+        silkCityExpress.schedule.put(dhaka, new String[]{"08:00", "08:15"});
+        silkCityExpress.schedule.put(rajshahi, new String[]{"12:30", "12:45"});
+        trains.put("333", silkCityExpress);
+
+        Train sundarbanExpress = new Train("444", "Sundarban Express");
+        sundarbanExpress.schedule.put(dhaka, new String[]{"09:00", "09:15"});
+        sundarbanExpress.schedule.put(khulna, new String[]{"13:30", "13:45"});
+        trains.put("444", sundarbanExpress);
+
+        Train rocketExpress = new Train("555", "Rocket Express");
+        rocketExpress.schedule.put(dhaka, new String[]{"10:00", "10:15"});
+        rocketExpress.schedule.put(barisal, new String[]{"14:30", "14:45"});
+        trains.put("555", rocketExpress);
+
+        Train nilSagarExpress = new Train("666", "Nil Sagar Express");
+        nilSagarExpress.schedule.put(dhaka, new String[]{"11:00", "11:15"});
+        nilSagarExpress.schedule.put(rangpur, new String[]{"15:30", "15:45"});
+        trains.put("666", nilSagarExpress);
+
+        Train beachExpress = new Train("777", "Beach Express");
+        beachExpress.schedule.put(dhaka, new String[]{"12:00", "12:15"});
+        beachExpress.schedule.put(coxsbazar, new String[]{"16:30", "16:45"});
+        trains.put("777", beachExpress);
     }
 
     private static void createWelcomePage() {
@@ -252,9 +302,17 @@ public class Main {
             }
         });
 
+        JButton backButton = new JButton("Back");
+        backButton.setBounds(175, 430, 100, 30);
+        backButton.addActionListener(e -> {
+            trainListFrame.dispose();
+            createSearchPage();
+        });
+
         trainListFrame.add(trainListLabel);
         trainListFrame.add(sp);
         trainListFrame.add(bookButton);
+        trainListFrame.add(backButton);
         trainListFrame.setVisible(true);
     }
 
