@@ -15,7 +15,7 @@ class Station {
 class Track {
     Station from;
     Station to;
-    int distance; // not used currently but can be expanded
+    int distance;
 
     Track(Station from, Station to, int distance) {
         this.from = from;
@@ -76,11 +76,16 @@ public class Main {
         Station sylhet = new Station("Sylhet");
         Station rajshahi = new Station("Rajshahi");
 
+        // Setting up the tracks between stations
+        // Hashmap: key is the station name, value is the station object 
         stations.put("Dhaka", dhaka);
         stations.put("Chittagong", chittagong);
         stations.put("Sylhet", sylhet);
         stations.put("Rajshahi", rajshahi);
 
+        // OOP concept: Here we are creating a track object and adding it to the tracks list of the 'from' station
+        // This way, we are creating a two-way track between two stations
+        // For example, there is a track between Dhaka and Chittagong, and also a track between Chittagong and Dhaka
         dhaka.tracks.add(new Track(dhaka, chittagong, 245));
         chittagong.tracks.add(new Track(chittagong, dhaka, 245));
         dhaka.tracks.add(new Track(dhaka, sylhet, 286));
@@ -88,6 +93,7 @@ public class Main {
         dhaka.tracks.add(new Track(dhaka, rajshahi, 343));
         rajshahi.tracks.add(new Track(rajshahi, dhaka, 343));
 
+        // OOP concept: Here we are creating train objects and adding the schedule to the train object
         Train subornoExpress = new Train("111", "Suborno Express");
         subornoExpress.schedule.put(dhaka, new String[]{"06:00", "06:15"});
         subornoExpress.schedule.put(chittagong, new String[]{"10:30", "10:45"});
